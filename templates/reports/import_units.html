@@ -1,0 +1,16 @@
+{% extends "reports/main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-capitalize">Import Units from Excel</h2>
+    <a href="{% url 'report-import-units-template-url' %}" class="btn btn-link"><i class="fas fa-download"></i> Download Template</a>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="file">Upload Excel File</label>
+            <input type="file" class="form-control" id="file" name="file" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Import Units</button>
+    </form>
+</div>
+{% endblock %}

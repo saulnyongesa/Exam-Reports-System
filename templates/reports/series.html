@@ -1,0 +1,73 @@
+{% extends "reports/main.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">Series</h2>
+    <div class="search-bar mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchInput"
+                placeholder="Enter course name or course code">
+        </div>
+    </div>
+    <div class="mb-1">
+        <a href="{% url 'report-add-series-url' %}" class="btn btn-primary float-right">
+            <i class="fas fa-plus"></i> Add Series
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover course-list">
+        <thead class="thead-dark">
+            <tr>
+                <th>Series Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="courseTableBody">
+            {% for series in serieses %}
+            <tr>
+                <td class="text-capitalize">{{ series.name }}</td>
+                <td>{{ series.start_date }}</td>
+                <td>{{ series.end_date }}</td>
+                <td>
+                    <a href="{% url 'report-edit-series-url' series.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    {% if series.is_active %}
+                    <button id="delete{{series.id}}" href="{% url 'report-delete-series-url' series.id %}"
+                        class="btn btn-danger btn-sm delete-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+     document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            const result = confirm('Are you sure you want to delete this series?');
+            if (result) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('An error occurred while deleting series');
+                        }
+                    });
+            }
+        });
+    });
+</script>
+{% endblock %}

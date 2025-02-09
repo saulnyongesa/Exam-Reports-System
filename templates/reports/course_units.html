@@ -1,0 +1,16 @@
+{% extends "reports/main.html" %}
+
+{% block content %}
+<div class="container text-center mt-1">
+    <div class="btn-group mb-1">
+        <button class="btn btn-primary m-1" onclick="location.href=''">Courses</button>
+        <button class="btn btn-primary m-1" onclick="location.href=''">Units</button>
+        <button class="btn btn-primary m-1" onclick="location.href=''">Units Per Course</button>
+    </div>
+    <div class="content">
+        {% block report_content %}
+        <!-- Content specific to each page will be inserted here -->
+        {% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "reports/main.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h2>Add Series</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit">Add Series</button>
+    </form>
+{% endblock %}

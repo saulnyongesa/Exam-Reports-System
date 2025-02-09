@@ -1,0 +1,170 @@
+{% extends "reports/main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Mark Report</h1>
+    <div class="w-100">
+        <form id="reportForm" action="" method="get">
+            {% csrf_token %}
+            <div class="w-100 p-3">
+                <select class="form-control" name="report_type" id="report_type" onchange="showFields()">
+                    <option value="">Choose Report Type</option>
+                    <option value="series">Marks Per Series</option>
+                    <option value="unit">Marks Per Unit</option>
+                    <option value="course">Marks Per Course</option>
+                    <option value="student">Marks Per Student</option>
+                </select>
+            </div>
+
+            <div class="w-100 p-3" id="series_field" style="display:none;">
+                <select class="form-control" name="series" id="series">
+                    <option value="">Choose Series</option>
+                    {% for series in series %}
+                    <option value="{{ series.id }}">{{ series.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-100 p-3" id="unit_field" style="display:none;">
+                <select class="form-control" name="unit" id="unit">
+                    <option value="">Choose Unit</option>
+                    {% for unit in units %}
+                    <option value="{{ unit.id }}">{{ unit.unit_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-100 p-3" id="course_field" style="display:none;">
+                <select class="form-control" name="course" id="course">
+                    <option value="">Choose Course</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="w-100 p-3" id="student_field" style="display:none; position: relative;">
+                <div class="custom-dropdown">
+                    <input type="text" class="form-control mb-2" id="regno_search" onkeyup="filterStudents()" placeholder="Search for registration number..">
+                    <div class="dropdown-options" id="regno_dropdown" style="border: 1px solid #ccc; max-height: 200px; overflow-y: auto; display: none;">
+                        {% for student in students %}
+                        <div class="dropdown-item" data-value="{{ student.id }}" onclick="selectStudent('{{ student.id }}', '{{ student.registration_number }} - {{ student.first_name }} {{ student.second_name }} {{ student.last_name }}')">
+                            {{ student.registration_number }} - {{ student.first_name }} {{ student.second_name }} {{ student.last_name }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <input type="hidden" name="regno" id="regno_hidden">
+            </div>
+            
+            <button type="submit" class="btn btn-primary mt-3" onclick="downloadReport(event)">Generate Report</button>
+        </form>
+    </div>
+</div>
+
+<style>
+    .custom-dropdown {
+        position: relative;
+        width: 100%;
+    }
+
+    .dropdown-options {
+        background-color: white;
+        position: absolute;
+        width: 100%;
+        z-index: 1000;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+    .dropdown-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<script>
+    function showFields() {
+        var reportType = document.getElementById('report_type').value;
+        document.getElementById('series_field').style.display = 'none';
+        document.getElementById('unit_field').style.display = 'none';
+        document.getElementById('course_field').style.display = 'none';
+        document.getElementById('student_field').style.display = 'none';
+
+        if (reportType === 'series') {
+            document.getElementById('series_field').style.display = 'block';
+        } else if (reportType === 'unit') {
+            document.getElementById('unit_field').style.display = 'block';
+            document.getElementById('series_field').style.display = 'block';
+        } else if (reportType === 'course') {
+            document.getElementById('course_field').style.display = 'block';
+            document.getElementById('series_field').style.display = 'block';
+        } else if (reportType === 'student') {
+            document.getElementById('student_field').style.display = 'block';
+            document.getElementById('series_field').style.display = 'block';
+        }
+    }
+
+    function filterStudents() {
+        const searchValue = document.getElementById("regno_search").value.toLowerCase();
+        const dropdown = document.getElementById("regno_dropdown");
+        const options = dropdown.getElementsByClassName("dropdown-item");
+        let hasVisibleOptions = false;
+
+        for (const option of options) {
+            const text = option.textContent || option.innerText;
+            if (text.toLowerCase().includes(searchValue)) {
+                option.style.display = "";
+                hasVisibleOptions = true;
+            } else {
+                option.style.display = "none";
+            }
+        }
+        dropdown.style.display = hasVisibleOptions ? "block" : "none";
+    }
+
+    function selectStudent(id, text) {
+        document.getElementById("regno_search").value = text;
+        document.getElementById("regno_hidden").value = id;
+        document.getElementById("regno_dropdown").style.display = "none";
+    }
+
+    document.getElementById("regno_search").addEventListener("focus", () => {
+        document.getElementById("regno_dropdown").style.display = "block";
+    });
+
+    document.addEventListener("click", (event) => {
+        const dropdown = document.getElementById("regno_dropdown");
+        const searchInput = document.getElementById("regno_search");
+        if (!dropdown.contains(event.target) && event.target !== searchInput) {
+            dropdown.style.display = "none";
+        }
+    });
+
+    function downloadReport(event) {
+        event.preventDefault();
+        var reportType = document.getElementById('report_type').value;
+        var seriesId = document.getElementById('series').value;
+        var unitId = document.getElementById('unit').value;
+        var courseId = document.getElementById('course').value;
+        var student_id = document.getElementById('regno_hidden').value;
+        var url = '';
+
+        if (reportType === 'series') {
+            url = `/report/export_excel_marks/series/${seriesId}/`;
+        } else if (reportType === 'unit') {
+            url = `/report/export_excel_marks/unit/${seriesId}/${unitId}/`;
+        } else if (reportType === 'course') {
+            url = `/report/export_excel_marks/course/${seriesId}/${courseId}/`;
+        } else if (reportType === 'student') {
+            url = `/report/export_excel_marks/student/${seriesId}/${student_id}`;
+        }
+        window.location.href = url;
+    }
+</script>
+{% endblock %}

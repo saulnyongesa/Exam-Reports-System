@@ -1,0 +1,52 @@
+{% extends "reports/main.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <button id="exportPdfBtn" class="btn btn-primary {% if students|length == 0 %}disabled{% endif %}">
+        <i class="fas fa-file-pdf"></i> Export to PDF
+    </button>
+</div>
+<div class="container student-details">
+    <h2 class="mt-4">Student Details</h2>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4 class="text-capitalize">{{ student.first_name }} {{ student.second_name }} {{ student.last_name }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Student REG NO:</strong> {{ student.registration_number }}</p>
+            <p><strong>Class:</strong> {{ student.course.course_name }}</p>
+            <p><strong>Age:</strong> {{ student.phone }}</p>
+            <p><strong>Email:</strong> {{ student.email }}</p>
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4 class="text-capitalize">Units</h4>
+        </div>
+        <div class="card-body">
+            <ul>
+                {% for course_unit in student.course.courseunit_set.all %}
+                <li>{{ course_unit.unit.unit_name }} ({{ course_unit.unit.unit_code }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('exportPdfBtn').addEventListener('click', function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        html2canvas(document.querySelector('.student-details')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const imgProps = doc.getImageProperties(imgData);
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            doc.save('student-details.pdf');
+        });
+    });
+</script>
+{% endblock %}

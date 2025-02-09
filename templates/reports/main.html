@@ -1,0 +1,102 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Society</title>
+    <!-- Bootstrap 4 CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'reports/css/main.css' %}">
+</head>
+
+<body>
+
+<!-- Main Container -->
+<div class="main-container">
+    <!-- Sidebar (Left Navigation) -->
+    <div class="sidebar" style="overflow-y: auto; max-height: 98vh;">
+        <h1 class="w-100 text-center text-white p-3">
+            Exams
+        </h1>
+        <hr class="bg-white">
+        {% if request.user.is_authenticated %}
+            <a href="{% url 'report-home-url' %}" class="btn text-left">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="{% url 'report-units-all-url' %}" class="btn text-left">
+                <i class="fas fa-book"></i> Units
+            </a>
+            <a href="{% url 'report-courses-all-url' %}" class="btn text-left">
+                <i class="fas fa-graduation-cap"></i> Courses
+            </a>
+            <a href="{% url 'report-course-units-view-url' %}" class="btn text-left">
+                <i class="fas fa-chalkboard-teacher"></i> Course Unit
+            </a>
+            <a href="{% url 'report-series-url' %}" class="btn text-left">
+                <i class="fas fa-stream"></i> Series
+            </a>
+            <a href="{% url 'report-students-all-url' %}" class="btn text-left">
+                <i class="fas fa-users"></i> Students
+            </a>
+            <a href="{% url 'report-mark-entry-url'  %}" class="btn text-left">
+                <i class="fas fa-calendar-alt"></i> Mark Entry/Check
+            </a>
+            <a href="{% url 'report-mark-reports-url' %}" class="btn text-left">
+                <i class="fas fa-file-alt"></i> Generate Reports
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="content" >
+        <!-- Top Navigation -->
+        <div class="top-nav mb-3">
+            <div class="society-name">
+                <span>{{ request.user.last_name }} {{ request.user.first_name }}</span>
+            </div>
+            {% if request.user.is_authenticated %}
+                <div>
+                    <span id="current-date"></span> |
+                    <a href="" class="text-danger">Logout</a>
+
+                </div>
+            {% endif %}
+        </div>
+        {#===============================Messages===================================#}
+        {% for message in messages %}
+            <p class="alert alert-dismissible alert-info text-center w-100 p-2">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong  {% if message.tags %} class="{{ message.tags }} "{% endif %}>
+                    {{ message }}
+                </strong>
+            </p>
+        {% endfor %}
+        <!-- Page Content (Will be filled by Django template blocks) -->
+        <div style="overflow-y: auto; max-height: 80vh; background-color: rgba(0, 0, 0, 0.12); padding: 10px;">
+            {% block content %}
+            <!-- Content will be dynamically loaded here -->
+            {% endblock %}
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Bootstrap 4 JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Script to display current date -->
+<script>
+    const today = new Date();
+    const dateString = today.toLocaleDateString();
+    document.getElementById("current-date").textContent = dateString;
+</script>
+</body>
+
+</html>

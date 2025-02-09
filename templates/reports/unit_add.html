@@ -1,0 +1,13 @@
+{% extends "reports/main.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h2>Add Unit</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary">Add Unit</button>
+        <a href="{% url 'report-units-all-url' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+{% endblock %}
