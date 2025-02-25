@@ -1,0 +1,33 @@
+{% extends "reports/main.html" %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2>Marks Entry</h2>
+<hr>
+<h4 class="text-uppercase">SERIES: {{series.name}}</h4>
+<h4 class="text-uppercase">REGISTRATION NUMBER: {{student.registration_number}}</h4>
+<h4 class="text-uppercase">NAME: {{student.name}}</h4>
+<h4 class="text-uppercase">COURSE: {{student.course}}</h4>
+<hr>
+<form method="post" class="">
+    {% csrf_token %}
+    <div class="w-100 d-flex flex-column flex-md-row">
+        <div id="div_id_unit" class="form-group">
+            <label for="id_unit" class=" requiredField">
+                Unit<span class="asteriskField">*</span>
+            </label>
+            <div> <select name="unit" class="select form-control" required="" id="id_unit">
+                    <option value="" selected="">---------</option>
+                    {% for unit in units %}
+                    <option value="{{unit.unit.id}}">{{unit.unit.unit_name}}----{{unit.unit.unit_code}}</option>
+                    {% endfor %}
+        
+                </select>
+            </div>
+        </div>
+        {{ form|crispy }}
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+{% endblock %}

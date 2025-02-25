@@ -2,11 +2,30 @@ from django import forms
 from .models import *
 from django.forms import modelformset_factory
 from django.forms.widgets import DateInput
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
+from django.contrib.auth.forms import PasswordChangeForm
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name']
+        
+        
+class AdminForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'id_number', 'is_examination_officer']
+        
+
+class PWDChangeView(PasswordChangeView):
+    form = PasswordChangeForm
+    success_url = reverse_lazy('signin-url')
 
 class StudentForm(forms.ModelForm):
     class Meta:
         model = StudentExam
-        fields = ['first_name', 'second_name', 'last_name', 'registration_number', 'email', 'phone', 'course']
+        fields = ['registration_number', 'name', 'course']
 
 class MarkForm(forms.ModelForm):
     class Meta:
@@ -26,14 +45,13 @@ class SeriesForm(forms.ModelForm):
 class CourseForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['course_name', 'course_code']
+        fields = ['course_code', 'course_name']
 
 class UnitForm(forms.ModelForm):
     class Meta:
         model = Unit
-        fields = ['unit_name', 'unit_code']
-
-
+        fields = '__all__'
+        
 class SeriesAddForm(forms.ModelForm):
     class Meta:
         model = Series
@@ -43,5 +61,14 @@ class SeriesAddForm(forms.ModelForm):
             'end_date': DateInput(attrs={'type': 'date'}),
         }
         
-        
+class MarkFormAfterStudentAdd(forms.ModelForm):
+    class Meta:
+        model = Mark
+        fields = ['exam_mark', 'cat_mark', 'project_mark']
 
+
+
+class TrainerSignupForm(forms.ModelForm):
+    class Meta:
+        model = Trainer
+        fields = ['name', 'id_number', 'photo']

@@ -1,0 +1,53 @@
+/* Dashboard Cards=============================================== */
+.card {
+    border-radius: 10px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.border-left-primary {
+    border-left: 5px solid #007bff;
+}
+
+.border-left-success {
+    border-left: 5px solid #28a745;
+}
+
+.border-left-warning {
+    border-left: 5px solid #ffc107;
+}
+
+.border-left-info {
+    border-left: 5px solid #17a2b8;
+}
+
+.border-left-dark {
+    border-left: 5px solid #343a40;
+}
+
+.border-left-danger {
+    border-left: 5px solid #dc3545;
+}
+
+/* Tables=========================================================== */ */
+.table th, .table td {
+    font-size: 0.9em; /* Slightly smaller font */
+    padding: 8px 10px; /* Adjusted padding */
+    text-align: center;
+    vertical-align: middle;
+}
+.table td {
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adds "..." if text is too long */
+}
+.btn-group {
+    display: flex;
+    gap: 5px; /* Adds space between buttons */
+}
+.btn-group .btn {
+    flex: 1; /* Ensures buttons are evenly sized */
+}

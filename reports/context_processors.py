@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import datetime, date
+from django.utils import timezone
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect
 from .models import *
 from django.utils.deprecation import MiddlewareMixin
 from django.db.models import Exists, OuterRef
@@ -16,7 +19,31 @@ def remaining_days(request):
             return {"remaining": 0}
     else:
         return {"remaining": 0}
-
+def dashboard(request):
+    if request.user.is_authenticated:
+        num_trainers = Trainer.objects.count()
+        num_students = StudentExam.objects.count()
+        num_units = Unit.objects.count()
+        num_courses = Course.objects.count()
+        num_admins = User.objects.filter(is_staff=True).count()
+        classes_today = TeachingAttendance.objects.filter(clock_out=date.today()).count()
+        return {
+            "num_trainers": num_trainers,
+            "num_students": num_students,
+            "num_units": num_units,
+            "num_courses": num_courses,
+            "num_admins": num_admins if not request.user else num_admins - 1,
+            "classes_today": classes_today,
+        }
+    else:
+        return {
+            "num_trainers": 0,
+            "num_students": 0,
+            "num_units": 0,
+            "num_courses": 0,
+            "num_admins": 0,
+            "classes_today": 0,
+        }
 
 def unit_count(request):
     if request.user.is_authenticated:
@@ -77,3 +104,43 @@ class EnrollStudentMiddleware(MiddlewareMixin):
                 pass
         return None
 
+
+class DesktopOnlyMiddleware:
+    MOBILE_USER_AGENTS = [
+        "Mobile", "Android", "iPhone", "iPad", "iPod", "BlackBerry", "Opera Mini", "IEMobile"
+    ]
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+        # If the request comes from a mobile device, deny access
+        if any(mobile in user_agent for mobile in self.MOBILE_USER_AGENTS):
+            return HttpResponseForbidden("Access restricted to desktop users only.")
+
+        return self.get_response(request)
+
+class CheckOTPTimeMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        otps = OTP.objects.filter(is_used=False)
+        for otp in otps:
+            expire_time = otp.expire_time
+            if expire_time <= timezone.now():
+                otp.is_used = True
+                otp.save()
+                otp.delete()
+        return None
+
+class RestrictUserFromAccessMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.user.is_authenticated and request.user.is_examination_officer and request.path.startswith('/admin/'):
+            return redirect('/report/')  # Redirect teachers to app
+        if request.user.is_authenticated and request.user.is_superuser and request.path.startswith('/report/'):
+            return redirect('/base/')  # Redirect teachers to app
+
+        return self.get_response(request)

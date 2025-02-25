@@ -1,0 +1,244 @@
+{% extends "base/main.html" %}
+
+{% block content %}
+<style>
+    .course-list {
+        max-height: 60vh; /* Limits height to 60% of viewport */
+        overflow-y: auto; /* Enables vertical scrolling */
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .course-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 8px;
+        margin-bottom: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .course-item:hover {
+        background: #e9ecef;
+    }
+
+    .course-item.active {
+        background: #28a745;
+        color: white;
+    }
+</style>
+<div class="container mt-5">
+    <form class="row">
+        <div class="col-md-4">
+            <h3>Select Courses</h3>
+            <hr>
+            <div class="course-list">
+                {% for course in courses %}
+                <button type="button" class="course-item {% if forloop.first %}active{% endif %}" onclick="selectCourse('{{ course.id }}', this)">
+                    {{ course.course_name }} ({{ course.course_code }})
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h3 id="title-header">Units Linked To Selected Course</h3>
+            <hr>
+            <div id="units-container">
+                <table class="table table-striped table-hover course-list">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Unit Name</th>
+                            <th>Unit Code</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for unit in course_units %}
+                        <tr class="unit" data-course="{{ unit.course.id }}" style="display: none;">
+                            <td>{{ unit.unit.unit_name }}</td>
+                            <td>{{ unit.unit.unit_code }}</td>
+                            <td>
+                                <button href="{% url 'admin-delete-course-units-url' unit.id %}" class="btn btn-danger delete-btn">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <a href="#" id="add-unit-button" style="display: none;">
+                    <i class="fas fa-plus"></i>
+                    Add Unit
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="add-unit-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Unit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="add-unit-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="course-id" name="course_id">
+                    <div id="unit-list"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveUnits()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstCourseButton = document.querySelector('.course-item.active');
+        if (firstCourseButton) {
+            selectCourse(firstCourseButton.getAttribute('onclick').match(/'([^']+)'/)[1], firstCourseButton);
+        }
+    });
+
+    function selectCourse(courseId, button) {
+        document.getElementById('course-id').value = courseId; // Set the course ID for adding units
+        showUnits(courseId); // Calls the function to display units for the selected course
+
+        // Remove active class from all buttons and add to the clicked button
+        document.querySelectorAll('.course-item').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        button.classList.add('active');
+    }
+
+    function showUnits(selectedCourse) {
+        const units = document.querySelectorAll('.unit');
+        const addButton = document.getElementById('add-unit-button');
+
+        units.forEach(function (unit) {
+            unit.style.display = unit.getAttribute('data-course') === selectedCourse ? 'table-row' : 'none';
+        });
+
+        addButton.style.display = selectedCourse ? 'inline-block' : 'none';
+    }
+
+    document.getElementById('add-unit-button').addEventListener('click', function (event) {
+        event.preventDefault();
+        filterUnits();
+        $('#add-unit-modal').modal('show');
+    });
+
+    function filterUnits() {
+        const selectedCourse = document.getElementById('course-id').value;
+        const addedUnits = Array.from(
+            document.querySelectorAll(`.unit[data-course="${selectedCourse}"]`)
+        ).map(unit => unit.querySelector('td:nth-child(2)').innerText);
+
+        fetch(`/base/get-unlinked-units/${selectedCourse}/`)
+            .then(response => response.json())
+            .then(data => {
+                const unitList = document.getElementById('unit-list');
+                unitList.innerHTML = '';
+
+                if (data.units.length === 0) {
+                    unitList.innerHTML = '<p>No more units available for this Course.</p>';
+                    return;
+                }
+
+                data.units.forEach(unit => {
+                    if (!addedUnits.includes(unit.unit_code)) {
+                        unitList.innerHTML += `
+                            <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+                                <p class="mb-0">${unit.unit_name} (${unit.unit_code})</p>
+                                <input type="checkbox" name="unit" value="${unit.id}" class="unit-checkbox">
+                            </div>`;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching unlinked units:', error);
+                alert('An error occurred while fetching units.');
+            });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function saveUnits() {
+        const selectedUnits = Array.from(document.querySelectorAll('#unit-list input:checked'))
+            .map(input => input.value);
+
+        const courseId = document.getElementById('course-id').value;
+
+        fetch('/base/save-course-units/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') // Ensure CSRF token is included
+            },
+            body: JSON.stringify({ course_id: courseId, units: selectedUnits })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error saving units!');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving units:', error);
+                alert('An error occurred while saving units.');
+            });
+    }
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            const result = confirm('Are you sure you want to Remove this unit?');
+            if (result) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('An error occurred while deleting unit');
+                        }
+                    });
+            }
+        });
+    });
+</script>
+{% endblock %}

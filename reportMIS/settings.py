@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'reports.apps.ReportsConfig',
+    "base.apps.BaseConfig",
     "crispy_forms",
     "crispy_bootstrap4",
 
@@ -54,6 +55,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'reports.context_processors.CheckSeriesDateMiddleware',
     'reports.context_processors.EnrollStudentMiddleware',
+    'reports.context_processors.DesktopOnlyMiddleware',
+    'reports.context_processors.CheckOTPTimeMiddleware',
+    'reports.context_processors.RestrictUserFromAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'reportMIS.urls'
@@ -73,6 +77,7 @@ TEMPLATES = [
                 'reports.context_processors.unit_count',
                 'reports.context_processors.student_count',
                 'reports.context_processors.course_count',
+                'reports.context_processors.dashboard',
             ],
         },
     },
@@ -116,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Nairobi'
 
 USE_I18N = True
 
@@ -136,3 +141,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images/')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'reports.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = 'True'
+EMAIL_HOST_USER = 'sanymtechs@gmail.com'
+EMAIL_HOST_PASSWORD = 'wdolvlmcdyzwlrwd'

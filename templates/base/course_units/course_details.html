@@ -1,0 +1,37 @@
+{% extends "base/main.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <button id="exportPdfBtn" class="btn btn-primary {% if unit is not defined %}disabled{% endif %}">
+        <i class="fas fa-file-pdf"></i> Export to PDF
+    </button>
+</div>
+<div class="container unit-details">
+    <h2 class="mt-4">Course Details</h2>
+
+    <div class="card mt-3">
+        <div class="card-header">
+            <h4 class="text-capitalize">Course Name: {{ course.course_name }}</h4>
+        </div>
+        <div class="card-body">
+            <p><strong>Course Code:</strong> {{ course.course_code }}</p>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('exportPdfBtn').addEventListener('click', function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        html2canvas(document.querySelector('.unit-details')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const imgProps = doc.getImageProperties(imgData);
+            const pdfWidth = doc.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            doc.save('unit-details.pdf');
+        });
+    });
+</script>
+{% endblock %}

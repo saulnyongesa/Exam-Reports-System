@@ -21,10 +21,8 @@ def generate_excel_for_student_reports(request):
         ws.title = "List of student reports"
         ws.append(
             [
-                "Student Name",
                 "Registration Number",
-                "Email",
-                "Phone",
+                "Student Name",
                 "Course",
                 "Series",
             ]
@@ -32,10 +30,8 @@ def generate_excel_for_student_reports(request):
         for student in StudentExam.objects.filter(is_active=True):
             ws.append(
                 [
-                    f"{student.first_name} {student.second_name} {student.last_name}",
                     student.registration_number,
-                    student.email,
-                    student.phone,
+                    f"{student.name}",
                     f"{student.course.course_name} {student.course.course_code}",
                     series.name,
                 ]
@@ -44,8 +40,6 @@ def generate_excel_for_student_reports(request):
         ws["B1"].font = Font(bold=True)
         ws["C1"].font = Font(bold=True)
         ws["D1"].font = Font(bold=True)
-        ws["E1"].font = Font(bold=True)
-        ws["F1"].font = Font(bold=True)
         response = HttpResponse(content_type="application/ms-excel")
         response["Content-Disposition"] = (
             "attachment; filename=Active_student_reports.xlsx"
@@ -117,7 +111,7 @@ def generate_excel_for_marks_per_course_reports(request, series_id, course_id):
         series=series
     ):
         ws.append([
-            f"{mark.student.first_name} {mark.student.second_name} {mark.student.last_name}",
+            f"{mark.student.name}",
             mark.student.registration_number,
             mark.unit.unit_name,
             mark.cat_mark,
@@ -142,17 +136,18 @@ def generate_excel_for_marks_per_student_reports(request, series_id, student_id)
         student = StudentExam.objects.get(id=student_id)
         wb = Workbook()
         ws = wb.active
-        ws.title = f"Marks for {student.first_name} {student.second_name} {student.last_name}"
-        ws.append(["Student Name:", f"{student.first_name} {student.second_name} {student.last_name} ({student.registration_number})"])
+        ws.title = f"Marks for {student.name}"
+        ws.append(["Student Name:", f"{student.name}"])
+        ws.append(["Registration Number:", f"{student.registration_number}"])
         ws.append(["Series Name:", series.name])
         ws.append(["Unit", "CAT Mark", "Exam Mark", "Project Mark"])
         for mark in Mark.objects.filter(series=series, student=student):
             ws.append([mark.unit.unit_name, mark.cat_mark, mark.exam_mark, mark.project_mark])
-        for col in ws.iter_cols(min_row=1, max_row=3, min_col=1, max_col=4):
+        for col in ws.iter_cols(min_row=1, max_row=4, min_col=1, max_col=5):
             for cell in col:
                 cell.font = Font(bold=True)
         response = HttpResponse(content_type="application/ms-excel")
-        response["Content-Disposition"] = f"attachment; filename=Marks_for_{student.first_name}_{student.second_name}_{student.last_name}.xlsx"
+        response["Content-Disposition"] = f"attachment; filename=Marks_for_{student.name}.xlsx"
         wb.save(response)
         return response
     except StudentExam.DoesNotExist:
@@ -174,7 +169,7 @@ def generate_excel_for_marks_per_unit_reports(request, series_id, unit_id):
     ws.append(["Student Name", "Registration Number", "CAT Mark", "Exam Mark", "Project Mark"])
     for mark in Mark.objects.filter(unit=unit, series=series):
         ws.append([
-            f"{mark.student.first_name} {mark.student.second_name} {mark.student.last_name}",
+            f"{mark.student.name}",
             mark.student.registration_number,
             mark.cat_mark,
             mark.exam_mark,
@@ -201,7 +196,7 @@ def generate_excel_for_marks_per_series_reports(request, series_id):
     ws.append(["Student Name", "Registration Number", "Unit", "CAT Mark", "Exam Mark", "Project Mark"])
     for mark in Mark.objects.filter(series=series):
         ws.append([
-            f"{mark.student.first_name} {mark.student.second_name} {mark.student.last_name}",
+            f"{mark.student.name}",
             mark.student.registration_number,
             mark.unit.unit_name,
             mark.cat_mark,
@@ -225,7 +220,7 @@ def import_couses_template(request):
         wb = Workbook()
         ws = wb.active
         ws.title = "Import Courses Template"
-        ws.append(["Course Name:", "Course Code:"])
+        ws.append(["Course Code", "Course Name"])
         ws["A1"].font = Font(bold=True)
         ws["B1"].font = Font(bold=True)
         
@@ -242,7 +237,7 @@ def import_units_template(request):
         wb = Workbook()
         ws = wb.active
         ws.title = "Import Units Template"
-        ws.append(["Unit Name:", "Unit Code:"])
+        ws.append(["Unit Code:", "Unit Name:"])
         ws["A1"].font = Font(bold=True)
         ws["B1"].font = Font(bold=True)
         
@@ -261,22 +256,15 @@ def import_students_template(request):
         ws.title = "Import Students Template"
         ws.append(
             [
-                "First Name",
-                "Second Name",
-                "Last Name",
                 "Registration Number",
-                "Email",
-                "Phone",
+                "Full Name",
                 "Course Code",
             ]
         )
         ws["A1"].font = Font(bold=True)
         ws["B1"].font = Font(bold=True)
         ws["C1"].font = Font(bold=True)
-        ws["D1"].font = Font(bold=True)
-        ws["E1"].font = Font(bold=True)
-        ws["F1"].font = Font(bold=True)
-        ws["G1"].font = Font(bold=True)
+        
      
         
         response = HttpResponse(content_type="application/ms-excel")

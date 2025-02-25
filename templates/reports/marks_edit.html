@@ -3,13 +3,10 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-capitalize">Edit Marks ({{ series.name }})</h2>
-    <p class="text-uppercase" style="color: black;">
-        NAME: {{ student.first_name }} {{ student.second_name }} {{ student.last_name }} <br>
-        REGISTRATION NUMBER: {{ student.registration_number }} <br>
-        COURSE: {{ student.course }}
-    </p>
-
+    <h4 class="text-uppercase">SERIES: {{series.name}}</h4>
+    <h4 class="text-uppercase">REGISTRATION NUMBER: {{student.registration_number}}</h4>
+    <h4 class="text-uppercase">NAME: {{student.name}}</h4>
+    <h4 class="text-uppercase">COURSE: {{student.course}}</h4>
     <form method="post">
         {% csrf_token %}
 

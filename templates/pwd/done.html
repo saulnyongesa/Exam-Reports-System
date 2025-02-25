@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify - Med Learn</title>
+  <!-- Bootstrap 4 CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+   
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="login-form">
+    {#===============================Messages===================================#}
+    {% for message in messages %}
+        <p class="alert alert-dismissible alert-info text-center w-100 p-2">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong  {% if message.tags %} class="{{ message.tags }} "{% endif %}>
+                {{ message }}
+            </strong>
+        </p>
+    {% endfor %}
+    <div class="card w-50 m-auto">
+        <div class="card-body bg-dark justify-content-start">
+            <p class="text-left text-capitalize text-white font-weight-bolder">We’ve emailed you a reset link. </p>
+            <P class="text-left text-capitalize text-white font-weight-bolder">If an account exists with the email you entered. You should receive the link shortly.</p>
+            <p class="text-left text-capitalize text-white font-weight-bolder">If you don’t receive the email, please make sure you’ve entered the EMAIL address you registered with, and check your spam folder.</p>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap 4 JS and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+  document.getElementById("loginForm").addEventListener("submit", function(event) {
+    // Hide the "Continue" button
+    document.getElementById("continueBtn").style.display = "none";
+    // Show the "Loading" button
+    document.getElementById("loadingBtn").style.display = "block";
+  });
+</script>
+
+</body>
+</html>

@@ -1,102 +1,185 @@
 {% load static %}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Society</title>
+    <title>Report MIS Examination</title>
+    
     <!-- Bootstrap 4 CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'reports/css/main.css' %}">
+    <!-- <link rel="stylesheet" href="{% static 'reports/css/main.css' %}"> -->
+    
+    <style>
+        /* General Styling */
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background-color: #343a40;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-nav .logo img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .top-nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 70px);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            padding-top: 20px;
+            height: 100%;
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar a {
+            color: #333;
+            text-decoration: none;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+        }
+
+        .sidebar a:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Content */
+        .content {
+            flex-grow: 1;
+            background-color: #f8f9fa;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Messages */
+        .alert {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-bottom: 10px;
+            }
+
+            .sidebar a {
+                flex-grow: 1;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- Main Container -->
-<div class="main-container">
-    <!-- Sidebar (Left Navigation) -->
-    <div class="sidebar" style="overflow-y: auto; max-height: 98vh;">
-        <h1 class="w-100 text-center text-white p-3">
-            Exams
-        </h1>
-        <hr class="bg-white">
-        {% if request.user.is_authenticated %}
-            <a href="{% url 'report-home-url' %}" class="btn text-left">
-                <i class="fas fa-home"></i> Home
-            </a>
-            <a href="{% url 'report-units-all-url' %}" class="btn text-left">
-                <i class="fas fa-book"></i> Units
-            </a>
-            <a href="{% url 'report-courses-all-url' %}" class="btn text-left">
-                <i class="fas fa-graduation-cap"></i> Courses
-            </a>
-            <a href="{% url 'report-course-units-view-url' %}" class="btn text-left">
-                <i class="fas fa-chalkboard-teacher"></i> Course Unit
-            </a>
-            <a href="{% url 'report-series-url' %}" class="btn text-left">
-                <i class="fas fa-stream"></i> Series
-            </a>
-            <a href="{% url 'report-students-all-url' %}" class="btn text-left">
-                <i class="fas fa-users"></i> Students
-            </a>
-            <a href="{% url 'report-mark-entry-url'  %}" class="btn text-left">
-                <i class="fas fa-calendar-alt"></i> Mark Entry/Check
-            </a>
-            <a href="{% url 'report-mark-reports-url' %}" class="btn text-left">
-                <i class="fas fa-file-alt"></i> Generate Reports
-            </a>
-        {% endif %}
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div class="logo">
+            <img src="{% static 'img/logo.jpeg' %}" alt="Logo">
+            <span>MKU KITALE</span>
+        </div>
+        <div>
+            <span id="current-date"></span> |
+            <a href="{% url 'report-profile-url' %}">{{ request.user.last_name }} {{ request.user.first_name }} <span class="text-success">(Examination Officer)</span></a>
+            <a href="{% url 'signout-url' %}" class="text-danger">Logout</a>
+        </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="content" >
-        <!-- Top Navigation -->
-        <div class="top-nav mb-3">
-            <div class="society-name">
-                <span>{{ request.user.last_name }} {{ request.user.first_name }}</span>
-            </div>
+    <!-- Main Container -->
+    <div class="main-container">
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
             {% if request.user.is_authenticated %}
-                <div>
-                    <span id="current-date"></span> |
-                    <a href="" class="text-danger">Logout</a>
-
-                </div>
+                <a href="{% url 'report-home-url' %}"><i class="fas fa-home"></i> Home</a>
+                <a href="{% url 'report-series-url' %}"><i class="fas fa-stream"></i> Series</a>
+                <a href="{% url 'report-students-all-url' %}"><i class="fas fa-users"></i> Students</a>
+                <a href="{% url 'report-mark-entry-url' %}"><i class="fas fa-calendar-alt"></i> Mark Check</a>
+                <a href="{% url 'report-mark-reports-url' %}"><i class="fas fa-file-alt"></i> Generate Reports</a>
             {% endif %}
         </div>
-        {#===============================Messages===================================#}
-        {% for message in messages %}
-            <p class="alert alert-dismissible alert-info text-center w-100 p-2">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <strong  {% if message.tags %} class="{{ message.tags }} "{% endif %}>
-                    {{ message }}
-                </strong>
-            </p>
-        {% endfor %}
-        <!-- Page Content (Will be filled by Django template blocks) -->
-        <div style="overflow-y: auto; max-height: 80vh; background-color: rgba(0, 0, 0, 0.12); padding: 10px;">
-            {% block content %}
-            <!-- Content will be dynamically loaded here -->
-            {% endblock %}
+
+        <!-- Main Content -->
+        <div class="content">
+            {% for message in messages %}
+                <p class="alert alert-info text-center">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <strong>{{ message }}</strong>
+                </p>
+            {% endfor %}
+
+            <!-- Dynamic Page Content -->
+            <div class="border p-1 shadow" style="min-height: 100vh;">
+                {% block content %}
+                {% endblock %}
+            </div>
         </div>
 
     </div>
 
-</div>
+    <!-- Bootstrap 4 JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Date Display Script -->
+    <script>
+        document.getElementById("current-date").textContent = new Date().toLocaleDateString();
+    </script>
 
-<!-- Bootstrap 4 JS and jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<!-- Script to display current date -->
-<script>
-    const today = new Date();
-    const dateString = today.toLocaleDateString();
-    document.getElementById("current-date").textContent = dateString;
-</script>
 </body>
-
 </html>

@@ -16,8 +16,28 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from base import excel as admin_excel
+from base import views
+from django.contrib.auth.views import PasswordChangeView as PWDChangeView
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('report/', include('reports.urls')),
+    path('base/', include('base.urls')),
+    
+    path('signin/', views.signin, name='signin-url'),
+    path('signout/', views.sign_out_user, name='signout-url'),
+    path('account/verify/<int:id>/', views.otp_verify, name='verify-url'),
+    
+     path('password-change/', PWDChangeView.as_view(template_name='reports/password_change.html'), name='change-pwd-url'),
+    path('reset_pwd_done/', auth_views.PasswordResetDoneView.as_view(template_name='pwd/done.html'), name='password_reset_done'),
+    path('reset_pwd/', auth_views.PasswordResetView.as_view(template_name='pwd/pwd-reset.html'),  name='reset_password'), path('reset_pwd_done/',
+         auth_views.PasswordResetDoneView.as_view(template_name='pwd/done.html'),
+         name='password_reset_done'),
+    path('reset_pwd/<uidb64>/<token>/',
+         auth_views.PasswordResetConfirmView.as_view(template_name='pwd/confirm.html'),
+         name='password_reset_confirm'),
+    path('reset_pwd_complete/', auth_views.PasswordResetCompleteView.as_view(template_name='pwd/complete.html'),
+         name='password_reset_complete'),
 ]
