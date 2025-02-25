@@ -3,3 +3,10 @@
 /face_recognition_models-master
 /face_recognition_models-master.zip
 /dlib-19.24.99-cp312-cp312-win_amd64.whl
+/static/images/
+/base/_pycache_/
+/reports/migrations/
+/reports/__pycache__/
+/reportMIS/__pycache__/
+/db.sqlite3
+

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'reports/css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'base/css/main.css' %}">
     
     <style>
         /* General Styling */
@@ -149,7 +149,7 @@
                 <a href="{% url 'admin-units-url' %}"><i class="fas fa-book"></i> Units</a>
                 <a href="{% url 'admin-course-units-url' %}"><i class="fas fa-layer-group"></i> Course Units</a>
                 <a href="{% url 'admins-url' %}"><i class="fas fa-user"></i> Users(Admins)</a>
-                <a href="#"><i class="fas fa-user-graduate"></i> User (Trainers)</a>
+                <a href="{% url 'trainers-url' %}"><i class="fas fa-user-graduate"></i> User (Trainers)</a>
                 <a href="#"><i class="fas fa-clock"></i> Clock In/Out</a>
                 <a href="{% url 'report-mark-reports-url' %}"><i class="fas fa-file-alt"></i> Generate Reports</a>
             {% endif %}

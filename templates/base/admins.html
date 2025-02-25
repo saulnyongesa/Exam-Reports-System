@@ -70,7 +70,7 @@
                         if (data.success) {
                             window.location.reload();
                         } else {
-                            alert('An error occurred while deleting unit');
+                            alert('An error occurred while deleting user');
                         }
                     });
             }
@@ -81,7 +81,7 @@
         button.addEventListener('click', function (event) {
             event.preventDefault();
             const url = this.getAttribute('href');
-            const result = confirm('Are you sure you want to chnage account status?');
+            const result = confirm('Are you sure you want to change account status?');
             if (result) {
                 fetch(url, {
                     method: 'POST',

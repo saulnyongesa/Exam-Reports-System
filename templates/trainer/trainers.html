@@ -1,0 +1,130 @@
+{% extends "base/main.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center my-4">ADMINISTARTORS</h2>
+
+    <div class="mb-4">
+        <a href="{% url 'trainer-signup-url' %}" class="btn btn-primary float-right m-3">
+            <i class="fas fa-plus"></i> New Trainer
+        </a>
+    </div>
+
+    <table class="table table-striped table-bordered table-hover unit-list">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>ID</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="unitTableBody">
+            {% for trainer in trainers %}
+            <tr>
+                <td>
+                    <button id="delete{{trainer.id}}" href="{% url 'trainer-url' trainer.id %}"
+                        class="btn text-dark btn-link btn-sm detail-btn">
+                        <i class="fas fa-eye"></i>
+                        {{ trainer.name }}
+                    </button>
+                </td>
+                <td>
+                    <button id="delete{{trainer.id}}" href="{% url 'trainer-url' trainer.id %}"
+                        class="btn text-dark btn-link btn-sm detail-btn">
+                        <i class="fas fa-eye"></i>
+                        {{ trainer.email }}
+                    </button>
+                </td>
+                <td>
+                    <button id="delete{{trainer.id}}" href="{% url 'trainer-url' trainer.id %}"
+                        class="btn text-dark btn-link btn-sm detail-btn">
+                        <i class="fas fa-eye"></i>
+                        {{ trainer.id_number }}
+                    </button>
+                </td>
+                <td>
+                    {% if trainer.is_active %}
+                    <button href="{% url 'trainer-status-url' trainer.id %}"
+                        class="btn text-success btn-link status-btn">
+                        Active
+                    </button>
+
+                    {% else %}
+                    <button href="{% url 'trainer-status-url' trainer.id %}"
+                        class="btn text-danger btn-link  status-btn">
+                        Inactive
+                    </button>
+                    {% endif %}
+                </td>
+                <td>
+                    <button id="delete{{trainer.id}}" href="{% url 'trainer-delete-url' trainer.id %}"
+                        class="btn text-danger btn-sm delete-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            const result = confirm('Are you sure you want to delete this trainer? Note that this action cannot be undone');
+            if (result) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('An error occurred while deleting trainer');
+                        }
+                    });
+            }
+        });
+    });
+
+    document.querySelectorAll('.status-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            const result = confirm('Are you sure you want to change trainer status?');
+            if (result) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('An error occurred while changing trainer status');
+                        }
+                    });
+            }
+        });
+    });
+    document.querySelectorAll('.detail-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            window.location.href = url;
+        });
+    });
+</script>
+{% endblock %}

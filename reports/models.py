@@ -118,6 +118,7 @@ class Mark(models.Model):
 class Trainer(models.Model):
     name = models.CharField(max_length=50, null=True)
     id_number = models.CharField(max_length=50, unique=True, null=True)
+    email = models.EmailField(max_length=50, null=True, unique=True)
     photo = models.ImageField(upload_to='photos/', blank=True, null=True)
     face_encoding = models.TextField(null=True)
     is_active = models.BooleanField(default=True, null=True)

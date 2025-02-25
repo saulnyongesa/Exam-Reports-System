@@ -1,0 +1,245 @@
+{% extends "base/main.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% block content %}
+
+<!-- Profile Section Start -->
+<div class="container mt-5">
+    <h2>Trainer Details</h2>
+    <hr>
+    <div class="row">
+        <!-- Profile Overview Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card profile-overview-card p-4 text-center">
+                <div class="profile-pic-holder">
+                    {% if trainer.photo %}
+                    <img src="{% static 'images/'%}{{ trainer.photo }}" alt="Profile Picture" class="profile-pic">
+                    {% else %}
+                    <img src="{% static 'img/profile.jfif' %}" alt="Profile Picture" class="profile-pic">
+                    {% endif %}
+                </div>
+
+                <h4 class="font-weight-bold">{{ trainer.name }}</h4>
+                <p class="text-muted">{{ trainer.email }}</p>
+                <p class="text-muted">{{ trainer.id_number }}</p>
+                <div class="text-left mt-4">
+                    <p class="info-item">
+                        <i class="fas fa-calendar-alt text-primary"></i> Joined: {{ trainer.created|date:"F j, Y" }}
+                    </p>
+                    <p class="info-item">
+                        <i class="fas fa-user-graduate text-success"></i> Role: Trainer
+                    </p>
+                </div>
+                    <a href="{% url 'trainer-edit-url' trainer.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+            </div>
+
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="col-md-8">
+            <div class="card shadow-lg p-4">
+                {% csrf_token %}
+                <div class="card-header bg-primary text-white text-center rounded">
+                    <h3 class="text-capitalize">
+                        <i class="fas fa-book-open mr-2"></i>Unit Tutoring
+                    </h3>
+                </div>
+                <div class="card-body" style="max-height: 80vh; overflow-y: auto;">
+
+                    <table class="table table-striped table-hover unit-list table-responsiv">
+                        <thead class="">
+                            <tr>
+                                <th>Unit Name</th>
+                                <th>Unit Code</th>
+                                <th>Hr/Class</th>
+                                <th>Hr/Week</th>
+                                <th>Hr/Term</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="unitTableBody">
+                            {% for unit in trainer_units %}
+                            <tr>
+                                <td class="text-capitalize">{{ unit.unit.unit_name }}</td>
+                                <td>{{ unit.unit.unit_code }}</td>
+                                <td>{{ unit.unit.teaching_hrs_per_class }}</td>
+                                <td>{{ unit.unit.teaching_hrs_week }}</td>
+                                <td>{{ unit.unit.teaching_hrs_term }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'admin-unit-detail-url' unit.id %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{% url 'admin-edit-unit-url' unit.id %}"
+                                            class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button id="delete{{unit.id}}"
+                                            href="{% url 'trainer-unit-delete-url' unit.id %}"
+                                            class="btn btn-danger btn-sm delete-btn">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="button" id="add-unit-button" class="w-100 btn btn-link">
+                        <i class="fas fa-plus">
+                        </i>Add Unit
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!-- Profile Section End -->
+<!-- Trainer Unit Modal -->
+<div id="add-unit-modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Units to Trainer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="height: 50vh; overflow-y: auto;">
+                <form id="add-unit-form" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" id="trainer-id" name="trainer_id" value="{{ trainer.id }}">
+                    <div id="unit-list"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" onclick="saveUnits()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trainer Unit Modal End-->
+
+
+
+<script>
+    document.getElementById('add-unit-button').addEventListener('click', function (event) {
+        event.preventDefault();
+        filterUnits();
+        $('#add-unit-modal').modal('show');
+    });
+    
+    function filterUnits() {
+        const trainerId = document.getElementById('trainer-id').value;
+
+        fetch(`/base/trainer/get-unlinked-units/${trainerId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const unitList = document.getElementById('unit-list');
+                unitList.innerHTML = '';
+
+                if (data.units.length === 0) {
+                    unitList.innerHTML = '<p>No more units available for this trainer.</p>';
+                    return;
+                }
+
+                data.units.forEach(unit => {
+                    unitList.innerHTML += `
+                    <ul class="d-flex w-100 justify-content-between align-items-center mb-2 list-unstyled" id="alphabetical-list">
+                        <li class="mb-0">${unit.unit_name}-(<span class="text-dark font-weight-bolder">${unit.unit_code}</span>)</li>
+                        <input type="checkbox" name="unit" value="${unit.id}" class="unit-checkbox">
+                    </ul>`;
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching unlinked units:', error);
+                alert('An error occurred while fetching units.');
+            });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        let list = document.getElementById("alphabetical-list");
+        let items = Array.from(list.getElementsByTagName("li"));
+
+        // Sort items alphabetically
+        items.sort((a, b) => a.textContent.localeCompare(b.textContent));
+
+        // Clear existing list and append sorted items
+        list.innerHTML = "";
+        items.forEach(item => list.appendChild(item));
+    });
+
+    function saveUnits() {
+        const selectedUnits = Array.from(document.querySelectorAll('#unit-list input:checked'))
+            .map(input => input.value);
+
+        const trainerId = document.getElementById('trainer-id').value;
+
+        fetch('/base/trainer/save-trainer-units/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ trainer_id: trainerId, units: selectedUnits })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error saving units!');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving units:', error);
+                alert('An error occurred while saving units.');
+            });
+    }
+
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            const url = this.getAttribute('href');
+            const result = confirm('Are you sure you want to remove this unit? Note that this action cannot be undone');
+            if (result) {
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert('An error occurred while removing unit');
+                        }
+                    });
+            }
+        });
+    });
+</script>
+
+{% endblock %}

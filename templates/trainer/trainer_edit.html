@@ -1,0 +1,55 @@
+{% extends 'base/main.html' %}
+{% load crispy_forms_filters %}
+{% block content %}
+
+  <style>
+   .trainer-signup-form {
+      padding: 10px;
+      width: 100%;
+    }
+
+    .form-control {
+      margin-bottom: 20px;
+    }
+
+    .btn-custom {
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1rem;
+    }
+
+    .loading-btn {
+      display: none;
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1rem;
+    }
+  </style>
+  <div class="container">
+    <div class="trainer-signup-form">
+      <h2>Trainer Edit Form</h2>
+      <hr>
+      <!-- Login Form -->
+      <form id="trainerSignUpForm" action="{% url 'trainer-edit-url'  trainer.id %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" id="continueBtn" class="btn btn-primary btn-custom">Save</button>
+        <button id="loadingBtn" class="btn btn-primary loading-btn" disabled>
+          <span class="spinner-border spinner-border-sm"></span>
+          Loading..
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Custom JavaScript -->
+  <script>
+    document.getElementById("trainerSignUpForm").addEventListener("submit", function (event) {
+      // Hide the "Continue" button
+      document.getElementById("continueBtn").style.display = "none";
+      // Show the "Loading" button
+      document.getElementById("loadingBtn").style.display = "block";
+    });
+  </script>
+
+{% endblock %}

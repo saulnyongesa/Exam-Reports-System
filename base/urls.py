@@ -8,10 +8,21 @@ urlpatterns = [
     path('profile/', views.profile, name='admin-profile-url'),
     path('Profile/Edit/', views.profile_edit, name='admin-profile-edit-url'),
     
+    path('admins/', views.admins_all, name='admins-url'),
     path('admin_signup/', views.admin_signup, name='admin-signup-url'),
     path('admin_delete/<int:admin_id>/', views.admin_delete, name='admin-delete-url'),
-    path('admins/', views.admins_all, name='admins-url'),
     path('admin/<int:admin_id>/', views.admin_status, name='admin-status-url'),
+    
+    path('trainers/', views.trainers_all, name='trainers-url'),
+    path('trainer_signup/', views.trainer_signup, name='trainer-signup-url'),
+    path('trainer_delete/<int:trainer_id>/', views.trainer_delete, name='trainer-delete-url'),
+    path('trainer/<int:trainer_id>/', views.trainer_status, name='trainer-status-url'),
+    path('trainer/details/<int:trainer_id>/', views.trainer_details, name='trainer-url'),
+    path('trainer/details/edit/<int:trainer_id>/', views.trainer_edit, name='trainer-edit-url'),
+    path('trainer/unit/delete/<int:id>/', views.trainer_unit_delete, name='trainer-unit-delete-url'),
+    path('trainer/get-unlinked-units/<int:trainer_id>/', views.get_unlinked_units_to_trainer, name='get_unlinked_units'),
+    path('trainer/save-trainer-units/', views.save_trainer_units, name='save_trainer_units'),
+
     
     path('import_units/', views.import_units_from_excel, name='admin-import-units-url'),
     path('import_courses/', views.import_courses_from_excel, name='admin-import-courses-url'),

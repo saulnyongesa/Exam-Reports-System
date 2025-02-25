@@ -344,35 +344,189 @@ def import_courses_from_excel(request):
 
     return render(request, "base/course_units/import_courses.html")
 
+# Trainer Signup=============================================================================================
+# def trainer_signup(request):
+#     form = TrainerSignupForm()
+#     if request.method == "POST":
+#         form = TrainerSignupForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             trainer = form.save(commit=False)
+#             uploaded_photo = request.FILES.get('photo')
+#             if uploaded_photo:
+#                 file_name = default_storage.save(uploaded_photo.name, uploaded_photo)
+#                 file_path = default_storage.path(file_name)
+#                 with open(file_path, 'rb') as f:
+#                     image_data = f.read()
+#                 nparr = np.frombuffer(image_data, np.uint8)
+#                 frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+#                 face_encodings = face_recognition.face_encodings(frame)
+#                 if face_encodings:
+#                         face_encoding = face_encodings[0]
+#                         trainer.face_encoding = ','.join(map(str, face_encoding))
+#                         trainer.save()
+#                         messages.success(request, 'Trainer account created successfully')
+#                         return redirect('trainers-url')
+#                 else:
+#                         messages.error(request, 'No face detected in the uploaded photo. Make sure the photo is clear and contains only one face.')
+#             else:
+#                     messages.error(request, 'Please upload a photo. It is required.')
+
+#         context = {
+#             'form': form,
+#         }
+#         return render(request, 'trainer/trainer_signup.html', context)
+#     else:
+#         context = {
+#             'form': form,
+#         }
+#         return render(request, 'trainer/trainer_signup.html', context)
+
 def trainer_signup(request):
     form = TrainerSignupForm()
+
     if request.method == "POST":
         form = TrainerSignupForm(request.POST, request.FILES)
+
         if form.is_valid():
             trainer = form.save(commit=False)
             uploaded_photo = request.FILES.get('photo')
+
             if uploaded_photo:
+                # Save the uploaded photo
                 file_name = default_storage.save(uploaded_photo.name, uploaded_photo)
                 file_path = default_storage.path(file_name)
-                with open(file_path, 'rb') as f:
-                    image_data = f.read()
-                nparr = np.frombuffer(image_data, np.uint8)
-                frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-                face_encodings = face_recognition.face_encodings(frame)
-                if face_encodings:
-                        face_encoding = face_encodings[0]
-                        trainer.face_encoding = ','.join(map(str, face_encoding))
-                        trainer.save()
-                        messages.success(request, 'Trainer added successfully')
-                        return redirect('trainer-signup-url')
-                else:
-                        messages.error(request, 'No face detected in the uploaded photo.')
-            else:
-                    messages.error(request, 'Please upload a photo.')
 
-        context = {
-            'form': form,
-        }
-        return render(request, 'clock/trainer_signup.html', context)
+                # Load image using OpenCV
+                frame = cv2.imread(file_path)
+
+
+                if frame is None:
+                    messages.error(request, "Could not read the image file. Ensure it is a valid image.")
+                    return render(request, 'trainer/trainer_signup.html', {'form': form})
+
+                # Convert to RGB format
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Check the image type
+                if frame.dtype != np.uint8:
+                    frame = frame.astype(np.uint8)
+
+                # Detect face encodings
+                face_encodings = face_recognition.face_encodings(frame)
+
+                if face_encodings:
+                    face_encoding = face_encodings[0]
+                    trainer.face_encoding = ','.join(map(str, face_encoding))
+                    trainer.save()
+                    messages.success(request, 'Trainer account created successfully')
+                    return redirect('trainers-url')
+                else:
+                    messages.error(request, 'No face detected in the uploaded photo. Make sure the photo is clear and contains only one face.')
+            else:
+                messages.error(request, 'Please upload a photo. It is required.')
+
+    return render(request, 'trainer/trainer_signup.html', {'form': form})
+
+
+def trainers_all(request):
+    trainers = Trainer.objects.all()
+    return render(request, "trainer/trainers.html", {"trainers": trainers})
+
+def trainer_status(request, trainer_id):
+    trainer = get_object_or_404(Trainer, id=trainer_id)
+    if request.method == "POST":
+        trainer.is_active = not trainer.is_active
+        trainer.save()
+        messages.success(request, "Status changed successfully")
+        return JsonResponse({"success": True, "message": "Status changed successfully"})
+    return JsonResponse({"success": False, "message": "Failed to change status"})
+
+
+def trainer_delete(request, trainer_id):
+    trainer = get_object_or_404(Trainer, id=trainer_id)
+    if request.method == "DELETE":
+        trainer.delete()
+        messages.success(request, "Trainer deleted successfully")
+        return JsonResponse({"success": True, "message": "Admin deleted successfully"})
+    return JsonResponse({"success": False, "message": "Failed to delete admin"})
+
+def trainer_details(request, trainer_id):
+    trainer = get_object_or_404(Trainer, id=trainer_id)
+    trainer_units = TrainerUnit.objects.filter(trainer=trainer)
+    assigned_unit_ids = trainer_units.values_list('unit_id', flat=True)
+    unassigned_units = Unit.objects.exclude(id__in=assigned_unit_ids)
+    return render(request, "trainer/trainer.html", {
+        "trainer": trainer,
+        "trainer_units": trainer_units,
+        "units": unassigned_units 
+    })
+
+def trainer_edit(request, trainer_id):
+    trainer = get_object_or_404(Trainer, id=trainer_id)
+    if request.method == "POST":
+        form = TrainerSignupForm(request.POST, request.FILES, instance=trainer)
+        if form.is_valid():
+            trainer = form.save(commit=False)
+            uploaded_photo = request.FILES.get('photo')
+
+            if uploaded_photo:
+                # Save the uploaded photo
+                file_name = default_storage.save(uploaded_photo.name, uploaded_photo)
+                file_path = default_storage.path(file_name)
+
+                # Load image using OpenCV
+                frame = cv2.imread(file_path)
+
+
+                if frame is None:
+                    messages.error(request, "Could not read the image file. Ensure it is a valid image.")
+                    return render(request, 'trainer/trainer_signup.html', {'form': form})
+
+                # Convert to RGB format
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Check the image type
+                if frame.dtype != np.uint8:
+                    frame = frame.astype(np.uint8)
+
+                # Detect face encodings
+                face_encodings = face_recognition.face_encodings(frame)
+
+                if face_encodings:
+                    face_encoding = face_encodings[0]
+                    trainer.face_encoding = ','.join(map(str, face_encoding))
+                    trainer.save()
+                    messages.success(request, 'Trainer Details Edited successfully')
+                    return HttpResponseRedirect(reverse("trainer-url", args=[trainer_id]))
+                else:
+                    messages.error(request, 'No face detected in the uploaded photo. Make sure the photo is clear and contains only one face.')
+            else:
+                messages.error(request, 'Please upload a photo. It is required.')
     else:
-        return render(request, 'Error.html')
+        form = TrainerSignupForm(instance=trainer)
+    return render(request, "trainer/trainer_edit.html", {"form": form, "trainer": trainer})
+def get_unlinked_units_to_trainer(request, trainer_id):
+    trainer_units = TrainerUnit.objects.filter(trainer_id=trainer_id).values_list('unit_id', flat=True)
+    unlinked_units = Unit.objects.exclude(id__in=trainer_units)
+    data = {"units": [{"id": unit.id, "unit_name": unit.unit_name, "unit_code": unit.unit_code} for unit in unlinked_units]}
+    return JsonResponse(data)
+
+def save_trainer_units(request):
+    if request.method == "POST":
+        import json
+        data = json.loads(request.body)
+        trainer_id = data.get("trainer_id")
+        unit_ids = data.get("units", [])
+        trainer = get_object_or_404(Trainer, id=trainer_id)
+        for unit_id in unit_ids:
+            unit = get_object_or_404(Unit, id=unit_id)
+            TrainerUnit.objects.get_or_create(trainer=trainer, unit=unit)
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+def trainer_unit_delete(request, id):
+    trainer = get_object_or_404(TrainerUnit, id=id)
+    if request.method == "DELETE":
+        trainer.delete()
+        messages.success(request, "Unit removed from the trainer successfully")
+        return JsonResponse({"success": True, "message": "Unit removed from the trainer successfully"})
+    return JsonResponse({"success": False, "message": "Failed to remove Unit from the trainer successfully"})

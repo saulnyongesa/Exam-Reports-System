@@ -72,3 +72,8 @@ class TrainerSignupForm(forms.ModelForm):
     class Meta:
         model = Trainer
         fields = ['name', 'id_number', 'photo']
+        
+class TrainerUnitForm(forms.ModelForm):
+    class Meta:
+        model = CourseUnit
+        fields = ['unit']

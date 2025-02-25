@@ -9,18 +9,28 @@
         <!-- Profile Overview Card -->
         <div class="col-md-4 mb-4">
             <div class="card profile-overview-card p-4 text-center">
+                <div class="profile-pic-holder">
+                    {% if request.user.profile_image %}
+                    <img src="{% static 'img/'  %}{{ request.user.profile_image }}" alt="Profile Picture"
+                        class="profile-pic">
+                    {% else %}
+                    <img src="{% static 'img/profile.jfif' %}" alt="Profile Picture" class="profile-pic">
+                    {% endif %}
+                </div>
+
                 <h4 class="font-weight-bold">{{ request.user.first_name }} {{ request.user.last_name }}</h4>
                 <p class="text-muted">{{ request.user.email }}</p>
-            </div>
-            <div class="text-left mt-4">
-                <p class="info-item">
-                    <i class="fas fa-calendar-alt text-primary"></i> Joined: {{ request.user.date_joined|date:"F j, Y" }}
-                </p>
-                <p class="info-item">
-                    <i class="fas fa-user-graduate text-success"></i> Role: Examination Officer
-                </p>
-            </div>
+                <div class="text-left mt-4">
+                    <p class="info-item">
+                        <i class="fas fa-calendar-alt text-primary"></i> Joined: {{ request.user.date_joined|date:"F j,
+                        Y" }}
+                    </p>
+                    <p class="info-item">
+                        <i class="fas fa-user-graduate text-success"></i> Role: Examination Officer
+                    </p>
 
+                </div>
+            </div>
         </div>
 
         <!-- Edit Profile Form -->
@@ -43,7 +53,7 @@
             </form>
             <a href="{% url 'change-pwd-url' %}" class="w-100 btn btn-secondary p-3">Change Password</a>
         </div>
-      
+
     </div>
 </div>
 <!-- Profile Section End -->
