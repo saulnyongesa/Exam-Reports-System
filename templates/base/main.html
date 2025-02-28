@@ -76,7 +76,6 @@
             font-size: 1rem;
             transition: 0.3s;
         }
-
         .sidebar a i {
             margin-right: 10px;
         }
@@ -134,7 +133,7 @@
         <div>
             <span id="current-date"></span> |
             <a href="{% url 'admin-profile-url' %}">{{ request.user.last_name }} {{ request.user.first_name }} <span class="text-success">(Admin)</span> </a>
-            <a href="{% url 'signout-url' %}" class="text-danger">Logout</a>
+            <a href="{% url 'admin-signout-url' %}" class="text-danger">Logout</a>
         </div>
     </div>
 
@@ -150,8 +149,8 @@
                 <a href="{% url 'admin-course-units-url' %}"><i class="fas fa-layer-group"></i> Course Units</a>
                 <a href="{% url 'admins-url' %}"><i class="fas fa-user"></i> Users(Admins)</a>
                 <a href="{% url 'trainers-url' %}"><i class="fas fa-user-graduate"></i> User (Trainers)</a>
-                <a href="#"><i class="fas fa-clock"></i> Clock In/Out</a>
-                <a href="{% url 'report-mark-reports-url' %}"><i class="fas fa-file-alt"></i> Generate Reports</a>
+                <a href="{% url 'admin-clock-url' %}"><i class="fas fa-clock"></i> Clock In/Out</a>
+                <a href="{% url 'clock-reports-url' %}"><i class="fas fa-file-alt"></i> Generate Reports</a>              
             {% endif %}
         </div>
 

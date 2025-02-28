@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.home, name='admin-home-url'),
     path('profile/', views.profile, name='admin-profile-url'),
     path('Profile/Edit/', views.profile_edit, name='admin-profile-edit-url'),
+    path('admin/signout/', views.sign_out_user, name='admin-signout-url'),
     
     path('admins/', views.admins_all, name='admins-url'),
     path('admin_signup/', views.admin_signup, name='admin-signup-url'),
@@ -43,6 +44,20 @@ urlpatterns = [
     path('get-unlinked-units/<int:course_id>/', views.get_unlinked_units, name='admin-get-unlinked-units'),
     path('save-course-units/', views.save_course_units, name='admin-save-course-units'),
     path('delete-course-units/<int:id>/', views.delete_course_unit, name='admin-delete-course-units-url'),
+    
+    path('clockinout/', views.clock, name='admin-clock-url'),
+    path('clockin/<trainer_id>/', views.clock_in, name='admin-clock-in-url'),
+    path('clockout/<trainer_id>/', views.clock_out, name='admin-clock-out-url'),
+    path('clock_in/unit_data/', views.get_unit_data, name='get-unit-data-url'),
+    
+    path('clock-reports/', views.clock_reports, name='clock-reports-url'),
+    path('clock-reports/clock-history-triner/', views.clock_history_trainer, name='clock-history-trainer-url'),
+    path('clock-reports/clock-history-all/', views.clock_history_all, name='clock-history-all-url'),
+    path('clock-reports/active-classes/', views.active_classes, name='active-classes-url'),
+    
+    path('generate/excel/<trainer_id>', admin_excel.generate_excel_clock_history_trainer, name='generate-excel-clock-history-trainer-url'),
+    path('generate/excel/all/', admin_excel.generate_excel_clock_history_all, name='generate-excel-clock-history-all-url'),
+
     
       
     path('export_excel/', admin_excel.generate_excel_for_student_reports, name='admin-export-excel-student-url'),

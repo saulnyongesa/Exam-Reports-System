@@ -1,18 +1,15 @@
 from io import BytesIO
 import json
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.shortcuts import render
 from django.contrib import messages
 from openpyxl import load_workbook
 from reports.forms import *
 from reports.models import *
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse
-import csv
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.forms import modelformset_factory
-from .forms import MarksFormSet  # Import the formset
+from django.db.models import Q
+from django.http import HttpResponseRedirect, JsonResponse
 
 
 # Create your views here.
@@ -20,6 +17,12 @@ from .forms import MarksFormSet  # Import the formset
 def profile(request):
     form = UserForm(instance=request.user)
     return render(request, 'reports/profile.html', {'form_profile': form})
+
+@login_required(login_url="signin-url")
+def sign_out_user(request):
+    logout(request)
+    return redirect("signin-url")
+
 
 @login_required(login_url='signin-url')
 def profile_edit(request):
@@ -34,7 +37,7 @@ def profile_edit(request):
     else:
             form = UserForm(instance=request.user)
     return render(request, 'reports/profile.html', {'form_profile': form})
-     
+
 @login_required(login_url='signin-url')
 def report_home(request):
     series = None
@@ -85,7 +88,7 @@ def mark_add_after_student_add(request, id):
             messages.success(request, f"Marks for {unit.unit_name} saved successfully!.")
             return HttpResponseRedirect("/report/student/mark/add/" + str(id) + "/")
     return render(request, "reports/marks_add_after_student_reg.html", {"form": form, "student": student, "units": units})
-    
+
 
 @login_required(login_url='signin-url')
 def edit_student(request, student_id):
@@ -213,6 +216,99 @@ def marks_reports(request):
     context = {"series": series, "units": units, "courses": courses, "students": students}
     return render(request, "reports/marks_report.html", context)
 
+# StudentExamStatus=======================================================================================
+@login_required(login_url='signin-url')
+def students_exam_status(request):
+    series = Series.objects.all
+    units = Unit.objects.all
+    courses = Course.objects.all
+    students = StudentExam.objects.all
+    context = {"series": series, "units": units, "courses": courses, "students": students}
+    return render(request, "reports/students_exam_status.html", context)
+
+
+@login_required(login_url="signin-url")
+def get_students_exam_status(request):
+    try:
+        series_id = request.GET.get('series')
+        course_id = request.GET.get('course')
+        unit_id = request.GET.get('unit')
+        student_id = request.GET.get('student')
+        filters = Q()
+        if series_id:
+            filters &= Q(series_id=series_id)
+        if course_id:
+            filters &= Q(student__course_id=course_id)
+        if unit_id:
+            filters &= Q(unit_id=unit_id)
+        if student_id:
+            filters &= Q(student_id=student_id)
+
+        status_list = StudentExamStatus.objects.filter(filters).select_related("student", "unit", "series")
+        data = [
+            {   
+                "id": status.id,
+                "student_id": status.student.id,
+                "student_name": status.student.name,
+                "registration_number": status.student.registration_number,
+                "series": status.series.name if status.series else None,
+                "unit": status.unit.unit_name,
+                "summative_theory": status.summative_theory,
+                "summative_practical": status.summative_practical,
+            }
+            for status in status_list
+        ]
+        
+        return JsonResponse({"success": True, "data": data}, safe=False)
+
+    except Exception as e:
+        print("ERROR: ", str(e))
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+
+@login_required(login_url='signin-url')
+def student_exam_status_edit_theory(request):
+    if request.method == "POST":
+        try:
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            id = data.get('id')
+            new_status = data.get('status')
+            # Update the status
+            status = get_object_or_404(StudentExamStatus, id=id)
+            status.summative_theory = new_status
+            status.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Student exam status changed successfully"}
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)})
+    
+    return JsonResponse({"success": False, "message": "Invalid request method"})
+
+@login_required(login_url='signin-url')
+def student_exam_status_edit_practical(request):
+    if request.method == "POST":
+        try:
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            id = data.get('id')
+            new_status = data.get('status')
+            # Update the status
+            status = get_object_or_404(StudentExamStatus, id=id)
+            status.summative_practical = new_status
+            status.save()
+
+            return JsonResponse(
+                {"success": True, "message": "Student exam status changed successfully"}
+            )
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)})
+    
+    return JsonResponse({"success": False, "message": "Invalid request method"})
+
 @login_required(login_url='signin-url')
 def series_view(request):
     series = Series.objects.all()
@@ -285,5 +381,3 @@ def import_students_from_excel(request):
         return redirect("report-students-all-url")
 
     return render(request, "reports/import_students.html")
-
-

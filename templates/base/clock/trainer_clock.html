@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="{% static 'sysimg/logo.jpeg' %}" type="image/jpeg">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* General Styling */
+        body {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            color: white;
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            top: 50%;
+            width: 40px;
+            height: 40px;
+            margin: -20px 0 0 -20px; /* Center the spinner */
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #5334db;
+            border-radius: 50%;
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dialog Box */
+        .dialog-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2a2a40, #1e1e2f);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            width: 90%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .dialog-box .card-footer {
+            background: transparent;
+            border: none;
+        }
+
+        .dialog-box button {
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .dialog-box button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Image Holder */
+        .imageHolder {
+            background: linear-gradient(135deg, #2a2a40, #1e1e2f);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .imageHolder .card-header {
+            background: transparent;
+            border: none;
+        }
+
+        .imageHolder .card-img {
+            background: #1e1e2f;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%; /* Ensure the container takes full width */
+            height: auto; /* Adjust height automatically */
+        }
+
+        .imageHolder .card-footer {
+            background: transparent;
+            border: none;
+        }
+
+        .imageHolder button {
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .imageHolder button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .imageHolder {
+                width: 100%;
+            }
+        }
+
+        /* Video Styling */
+        video {
+            width: 100%; /* Make the video fill the container */
+            height: auto; /* Maintain aspect ratio */
+            border-radius: 10px; /* Match the container's border radius */
+        }
+    </style>
+    <title>Equip Teaching Attendance Register</title>
+</head>
+<body>
+    <!-- Spinner -->
+    <div class="spinner" id="spinner"></div>
+
+    <!-- Dialog Box -->
+    <div class="dialog-box card" id="dialog-box">
+        <div class="card-body">
+            <p class="text-center" id="dialog-message"></p>
+        </div>
+        <div class="card-footer d-flex">
+            <button class="btn btn-primary w-25 m-auto" id="close-btn" onclick="closeDialog()">Next</button>
+            <button class="btn btn-danger w-50 m-auto" id="retry-btn" onclick="retryFunc()">Try Again</button>
+            <button class="btn btn-danger w-25 m-auto" id="cancel-btn" onclick="cancelDialog()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <section class="container-fluid p-2" style="height: 100vh;">
+        {% for message in messages %}
+            <p class="alert alert-dismissible alert-info text-center w-100 p-2">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <strong {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </strong>
+            </p>
+        {% endfor %}
+        <!-- Image Holder -->
+        <div class="card w-50 m-auto imageHolder d-block" id="imageHolder">
+            <div class="card-header">
+                <p class="text-center text-white font-weight-bolder">Face Capture</p>
+            </div>
+            <div class="card card-img" id="camera-feed"></div>
+            <div class="card-footer d-flex">
+                <button id="capture-button" class="btn btn-success m-auto w-100 p-3">Proceed</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const imageHolder = document.getElementById('imageHolder');
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.setAttribute('playsinline', ''); // Prevent fullscreen on mobile
+                video.play();
+                document.getElementById('camera-feed').appendChild(video);
+            })
+            .catch(err => {
+                console.error('Error accessing camera:', err);
+                alert('Error accessing camera. Please ensure you have granted camera permissions.');
+            });
+
+        let id_global;
+        document.getElementById('capture-button').addEventListener('click', () => {
+            const video = document.querySelector('video');
+            const canvas = document.createElement('canvas');
+            const spinner = document.getElementById('spinner');
+            const next = document.getElementById('close-btn');
+            const cancel = document.getElementById('cancel-btn');
+            const retry = document.getElementById('retry-btn');
+            const cb = document.getElementById('capture-button');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            cb.disabled = true;
+            spinner.style.display = 'block';
+            fetch('/clock/face-recognizer/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ image_data: imageData })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        dataReceiver(data.id);
+                        spinner.style.display = 'none';
+                        retry.style.display = 'none';
+                        showDialog('Success, Welcome ' + data.trainer_name);
+                    } else {
+                        spinner.style.display = 'none';
+                        next.style.display = 'none';
+                        cancel.style.display = 'none';
+                        showDialog('Face Not Recognized! Please click Try Again Button');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    cancel.style.display = 'none';
+                    next.style.display = 'none';
+                    showDialog('An error occurred.');
+                });
+        });
+
+        function dataReceiver(id) {
+            id_global = id;
+            return id;
+        }
+
+        function dataSender() {
+            return id_global;
+        }
+
+        // DIALOG BOX=================================================================
+        function showDialog(message) {
+            document.getElementById("dialog-message").innerText = message;
+            document.getElementById("dialog-box").style.display = "block";
+        }
+
+        function closeDialog() {
+            document.getElementById("dialog-box").style.display = "none";
+            window.location.href = '/clock/' + dataSender() + '/';
+        }
+
+        function cancelDialog() {
+            window.location.href = '/';
+        }
+
+        function retryFunc() {
+            window.location.href = '/';
+        }
+
+        // Function to check screen width and update class
+        function updateClass() {
+            let width = screen.width;
+            if (width <= 768) { // Adjust the width according to your needs
+                imageHolder.classList.remove('w-25');
+                imageHolder.classList.add('w-50');
+            } else {
+                imageHolder.classList.remove('w-50');
+                imageHolder.classList.add('w-25');
+            }
+        }
+
+        // Call the function when the page loads and when the window is resized
+        window.onload = updateClass;
+        window.onresize = updateClass;
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/MediaStreamRecorder.js"></script>
+</body>
+</html>

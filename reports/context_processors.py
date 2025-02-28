@@ -26,14 +26,14 @@ def dashboard(request):
         num_units = Unit.objects.count()
         num_courses = Course.objects.count()
         num_admins = User.objects.filter(is_staff=True).count()
-        classes_today = TeachingAttendance.objects.filter(clock_out=date.today()).count()
+        active_classes = TeachingAttendance.objects.filter(is_clocked_in=True, is_clocked_out=False).count()
         return {
             "num_trainers": num_trainers,
             "num_students": num_students,
             "num_units": num_units,
             "num_courses": num_courses,
             "num_admins": num_admins if not request.user else num_admins - 1,
-            "classes_today": classes_today,
+            "active_classes": active_classes,
         }
     else:
         return {
@@ -138,9 +138,9 @@ class RestrictUserFromAccessMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated and request.user.is_examination_officer and request.path.startswith('/admin/'):
-            return redirect('/report/')  # Redirect teachers to app
-        if request.user.is_authenticated and request.user.is_superuser and request.path.startswith('/report/'):
-            return redirect('/base/')  # Redirect teachers to app
+        if request.user.is_authenticated and request.user.role == 'EXAMINATION_OFFICER' and not request.path.startswith('/report/'):
+            return redirect('/report/') # Redirect examination to page
+        if request.user.is_authenticated and request.user.role == 'ADMIN' and not (request.path.startswith('/admin/') or request.path.startswith('/base/')):
+            return redirect('/base/')  # Redirect admin to base page if not accessing /admin/ or /base/
 
         return self.get_response(request)

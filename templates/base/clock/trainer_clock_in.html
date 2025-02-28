@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock In Trainer</title>
+    
+    <!-- Bootstrap 4 CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body style="background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+">
+    <div class="container">
+        {% for message in messages %}
+        <p class="alert alert-dismissible alert-info text-center w-100 p-2">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong {% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                {{ message }}
+            </strong>
+        </p>
+    {% endfor %}
+        <form action="{% url 'trainer-clock-in-url' trainer.id %}" method="post" class="card p-4 clock-form w-75 m-auto" style="background: linear-gradient(135deg, #fefeff, #2a2a40); border: none;">
+            {% csrf_token %}
+            <div class="card-header text-center" style="background: transparent; border: none;">
+                <p class="text-info h4">Clock In Trainer For A Class</p>
+            </div>
+            <div class="spinner" id="spinner"></div>
+            <div class="card-body row">
+                <!-- Left Column -->
+                <div class="col-sm-12 col-md-6 p-4" style="border-right: 2px solid #444;">
+                    <div class="d-flex justify-content-center">
+                        <img class="m-auto rounded-circle" src="{% static 'images/' %}{{ trainer.photo }}" alt="Photo Not Found, Update Trainer Photo" style="width: 120px; height: 120px; border: 3px solid #007bff;">
+                    </div>
+                    <p class="text-center text-white mt-3">NAME <br> <span class="text-danger h5">{{ trainer.name }}</span> </p>
+
+                    <!-- Unit Selection -->
+                    <label for="unit" class="w-100 mt-4">
+                        <span class="text-white font-weight-bold">CHOOSE THE UNIT*</span> <br>
+                        <select class="form-control bg-dark text-white" onchange="getUnitInfo()" name="unit_id" id="unit" required style="border: 1px solid #555; border-radius: 10px;">
+                            <option value="">--------</option>
+                            {% for unit in units %}
+                                <option value="{{ unit.id }}">{{ unit.unit_name }} --- {{ unit.unit_code }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                      <!-- ID Input -->
+                      <div class="mt-3">
+                        <label for="id_number" class="w-100">
+                            <span class="text-white font-weight-bold">ID NUMBER:</span> <br>
+                            <input class="form-control" type="number" name="id_number" placeholder="Enter ID Number" required>
+                        </label>
+                    </div>
+                </div>
+    
+                <!-- Right Column -->
+                <div class="col-sm-12 col-md-6 p-4">
+                    <div class="w-100 p-3" style="background: #1e1e2f; border-radius: 10px;">
+                        <p class="text-center text-white font-weight-bold h5">UNIT SUMMARY FOR THIS WEEK</p>
+                        <div id="before-summary" class="w-100 p-3 text-center" style="border-radius: 10px;">
+                            <p class="text-danger">Select Unit To See Summary</p>
+                        </div>
+                        <ul id="summary" class="w-100 p-3 list-unstyled d-none" style="border-radius: 10px;">
+                            <li class="p-2"><p class="text-white font-weight-bold">UNIT NAME: <span class="text-info" id="unit_name"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">UNIT CODE: <span class="text-info" id="unit_code"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">EXPECTED HOURS PER CLASS: <br><span class="text-info" id="expected_hours_per_class"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">EXPECTED HOURS PER WEEK: <br><span class="text-info" id="expected_hours"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">HOURS COVERED THIS WEEK: <br><span class="text-info" id="hours_covered"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">HOURS COVERED IN %: <br><span class="text-danger" id="percentage"></span></p></li>
+                            <li class="p-2"><p class="text-white font-weight-bold">REMAINING HOURS THIS WEEK: <br><span class="text-info" id="remaining_hours"></span></p></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <hr class="bg-white">
+            <div class="card-footer d-flex" style="background: transparent; border: none;">
+                <input class="btn btn-success w-25 m-auto clock-in-btn" type="submit" value="Clock In" style="border-radius: 10px;">
+                <a href="{% url 'trainer-clock-url' %}" class="btn btn-danger w-25 m-auto" style="border-radius: 10px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+ 
+    <style>
+        /* Spinner Animation */
+        #spinner {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hover Effects */
+        .clock-in-btn:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+
+        /* Form Input Focus */
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+    </style>
+
+    <script>
+        const trainerId = "{{ trainer.id }}";
+
+        function getUnitInfo() {
+            const before_summary = document.getElementById('before-summary');
+            const summary = document.getElementById('summary');
+            const unit_name = document.getElementById('unit_name');
+            const unit_code = document.getElementById('unit_code');
+            const expected_hours = document.getElementById('expected_hours');
+            const expected_hours_per_class = document.getElementById('expected_hours_per_class');
+            const hours_covered = document.getElementById('hours_covered');
+            const percentage = document.getElementById('percentage');
+            const remaining_hours = document.getElementById('remaining_hours');
+            const spinner = document.getElementById('spinner');
+            const unit_id = document.getElementById('unit').value;
+            spinner.style.display = 'block';
+
+            fetch('/clock_in/unit_data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ unit_id: unit_id, trainer_id: trainerId })
+            })
+            
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        spinner.style.display = 'none';
+                        unit_name.innerText = data.unit_name;
+                        unit_code.innerText = data.unit_code;
+                        expected_hours.innerText = data.expected_hours + " HRS";
+                        expected_hours_per_class.innerText = data.expected_hours_per_class+ " HRS";
+                        hours_covered.innerText = data.hours_covered;
+                        percentage.innerText = data.percentage + " %";
+                        remaining_hours.innerText = data.remaining_hours + " HRS";
+                        summary.classList.remove('d-none');
+                        summary.classList.add('d-block');
+                        before_summary.classList.remove('d-block');
+                        before_summary.classList.add('d-none');
+                    } else {
+                        spinner.style.display = 'none';
+                        summary.classList.remove('d-block');
+                        summary.classList.add('d-none');
+                        before_summary.classList.remove('d-none');
+                        before_summary.classList.add('d-block');
+                        before_summary.innerText = "Unit Information Not Found";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    spinner.style.display = 'none';
+                    summary.classList.remove('d-block');
+                    summary.classList.add('d-none');
+                    before_summary.classList.remove('d-none');
+                    before_summary.classList.add('d-block');
+                    before_summary.innerText = "Error Occurred While Fetching Unit Summary";
+                });
+        }
+    </script>
+</body>
+</html>

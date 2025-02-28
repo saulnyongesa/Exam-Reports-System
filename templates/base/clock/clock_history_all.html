@@ -1,0 +1,74 @@
+{% extends 'base/clock/clock_reports.html' %}
+{% load static %}
+{% block content-show %}
+    <!-- Form Section -->
+    <form action="{% url 'clock-history-all-url' %}" class="card p-4 login-form w-75 m-auto shadow-lg" method="post" style="border-radius: 15px;">
+        {% csrf_token %}
+        <div class="row mt-3">
+            <div class="col-sm-12 col-md-6 col-lg-6">
+                <label class="font-weight-bold">FROM*</label>
+                <input type="date" required name="date1" class="form-control">
+            </div>
+            <div class="col-sm-12 col-md-6 col-lg-6">
+                <label class="font-weight-bold">TO*</label>
+                <input type="date" required name="date2" class="form-control">
+            </div>
+        </div>
+        <div class="mt-3">
+            <input class="btn btn-primary w-100" type="submit" value="Generate">
+        </div>
+    </form>
+
+    <!-- Spacer -->
+    <div class="p-3 w-100"></div>
+
+    <!-- Table Section -->
+    {% if clocks %}
+        <div class="d-flex">
+            <a class="btn btn-success w-25 m-auto shadow-lg" href="{% url 'generate-excel-clock-history-all-url' %}" style="border-radius: 10px;">Download Excel</a>
+        </div>
+        <div class="card border w-75 m-auto shadow-lg mt-4" id="clock" style="border-radius: 15px;">
+            <div class="card-header bg-dark text-white" style="border-radius: 15px 15px 0 0;">
+                <p class="text-left text-uppercase font-weight-bolder">TEACHING ATTENDANCE FROM <span class="text-danger">{{ start.date }}</span> TO <span class="text-danger">{{ end.date }}</span></p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th class="font-weight-bolder">Trainer</th>
+                                <th class="font-weight-bolder">Unit Name</th>
+                                <th class="font-weight-bolder">Class Date</th>
+                                <th class="font-weight-bolder">Clock In</th>
+                                <th class="font-weight-bolder">Clock Out</th>
+                                <th class="font-weight-bolder">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% regroup clocks by trainer.name as by_trainer %}
+                            {% for unit_group in by_trainer %}
+                                <tr>
+                                    <td colspan="7" class="font-weight-bold bg-secondary text-white">{{ unit_group.grouper }}</td>
+                                </tr>
+                                {% for clock in unit_group.list %}
+                                    <tr>
+                                        <td class="text-capitalize"> {{ clock.trainer.name }} {{ clock.trainer.id_number }}</td>
+                                        <td class="text-capitalize">{{ clock.unit.unit_name }} {{ clock.unit.unit_code }}</td>
+                                        <td>{{ clock.clock_in.date }}</td>
+                                        <td>{{ clock.clock_in }}</td>
+                                        {% if clock.is_clocked_out %}
+                                            <td>{{ clock.clock_out }}</td>
+                                        {% else %}
+                                            <td class="text-danger font-weight-bold">PENDING</td>
+                                        {% endif %}
+                                        <td>{{ clock.time_taken }} Min</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

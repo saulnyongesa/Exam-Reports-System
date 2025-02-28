@@ -135,7 +135,7 @@
         <div>
             <span id="current-date"></span> |
             <a href="{% url 'report-profile-url' %}">{{ request.user.last_name }} {{ request.user.first_name }} <span class="text-success">(Examination Officer)</span></a>
-            <a href="{% url 'signout-url' %}" class="text-danger">Logout</a>
+            <a href="{% url 'report-signout-url' %}" class="text-danger">Logout</a>
         </div>
     </div>
 
@@ -149,7 +149,8 @@
                 <a href="{% url 'report-series-url' %}"><i class="fas fa-stream"></i> Series</a>
                 <a href="{% url 'report-students-all-url' %}"><i class="fas fa-users"></i> Students</a>
                 <a href="{% url 'report-mark-entry-url' %}"><i class="fas fa-calendar-alt"></i> Mark Check</a>
-                <a href="{% url 'report-mark-reports-url' %}"><i class="fas fa-file-alt"></i> Generate Reports</a>
+                <a href="{% url 'report-students-exam-status-url' %}"><i class="fas fa-book-open"></i> Students Status</a>
+                <a href="{% url 'report-mark-reports-url' %}"><i class="fas fa-file-alt"></i> Exam Reports</a>
             {% endif %}
         </div>
 

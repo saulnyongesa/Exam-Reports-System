@@ -1,0 +1,44 @@
+{% extends 'base/clock/clock_reports.html' %}
+{% block content-show %}
+    {% if clocks %}
+        <div class="card text-white shadow-lg" style="border-radius: 15px;">
+            <div class="card-header bg-dark">
+                <p class="text-center text-white text-uppercase font-weight-bolder h4">ACTIVE CLASSES ({{ clocks.count }})</p>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive"> <!-- Add this wrapper for responsiveness -->
+                    <table class="table table-hover table-bordered table-striped">
+                        <thead class="">
+                            <tr>
+                                <th class="font-weight-bolder">Trainer Name</th>
+                                <th class="font-weight-bolder">Trainer ID Number</th>
+                                <th class="font-weight-bolder">Unit Name</th>
+                                <th class="font-weight-bolder">Class Date</th>
+                                <th class="font-weight-bolder">Clock In</th>
+                                <th class="font-weight-bolder">Clock Out</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for clock in clocks %}
+                                <tr class="bg-light text-dark">
+                                    <td class="text-capitalize">{{ clock.trainer.name }}</td>
+                                    <td class="text-capitalize">{{ clock.trainer.id_number }}</td>
+                                    <td class="text-capitalize">{{ clock.unit.unit_name }} {{ clock.unit.unit_code }}</td>
+                                    <td>{{ clock.clock_in.date }}</td>
+                                    <td>{{ clock.clock_in }}</td>
+                                    <td class="text-danger font-weight-bold">Not Clocked Out</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card text-dark shadow-lg" style="border-radius: 15px;">
+            <div class="card-body text-center">
+                <p class="h4 text-uppercase font-weight-bolder">No Active Classes</p>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

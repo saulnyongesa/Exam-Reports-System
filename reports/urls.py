@@ -1,10 +1,11 @@
 from django.urls import path
-from . import views, excel
+from reports import views, excel
 
 
 urlpatterns = [
     path('profile/', views.profile, name='report-profile-url'),
     path('Profile/Edit/', views.profile_edit, name='report-profile-edit-url'),
+    path('signout/', views.sign_out_user, name='report-signout-url'),
    
     
     
@@ -21,6 +22,10 @@ urlpatterns = [
     path('mark/enter/<int:id>/', views.mark_add, name='report-add-mark-url'),
     path('mark/edit/<int:id>/', views.marks_edit, name='report-edit-mark-url'),
     path('student/mark/add/<str:id>/', views.mark_add_after_student_add, name='report-mark-add-after-student-add-url'),
+    path('student/exam/status/', views.students_exam_status, name='report-students-exam-status-url'),
+    path('get_student/exam/status/', views.get_students_exam_status, name="get_students_exam_status"),
+    path('student/exam/theory/status/', views.student_exam_status_edit_theory, name='report-student-exam-status-edit-theory-url'),
+    path('student/exam/practical/status/', views.student_exam_status_edit_practical, name='report-student-exam-status-edit-practical-url'),
 
 
 
@@ -42,5 +47,7 @@ urlpatterns = [
     path('export_excel_marks/student/<int:series_id>/<int:student_id>/', excel.generate_excel_for_marks_per_student_reports, name='report-export-excel-marks-url'),
 
     path('import_students/', views.import_students_from_excel, name='report-import-students-url'),
+    path('download/import_students/template/', excel.import_students_template, name='report-import-students-template-url'),   
+
     
 ]

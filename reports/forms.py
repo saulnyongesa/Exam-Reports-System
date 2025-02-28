@@ -15,7 +15,7 @@ class UserForm(forms.ModelForm):
 class AdminForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'id_number', 'is_examination_officer']
+        fields = ['first_name', 'last_name', 'email', 'id_number', 'role', 'profile_photo']
         
 
 class PWDChangeView(PasswordChangeView):
@@ -77,3 +77,4 @@ class TrainerUnitForm(forms.ModelForm):
     class Meta:
         model = CourseUnit
         fields = ['unit']
+

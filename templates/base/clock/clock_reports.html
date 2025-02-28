@@ -1,0 +1,16 @@
+{% extends 'base/main.html' %}
+{% block content %}
+<div class="d-flex w-100">
+    <div class="m-auto">
+        <a class="btn btn-link" href="{% url 'active-classes-url' %}">Active Classes</a>
+        <a class="btn btn-link" href="{% url 'clock-history-trainer-url' %}">Teaching Attendance report per Trainer</a>
+        <a class="btn btn-link" href="{% url 'clock-history-all-url' %}">Teaching Attendance Report For All Trainers</a>
+    </div>
+</div>
+<hr>
+<!-- Dynamic Page Content -->
+<div>
+    {% block content-show %}
+    {% endblock %}
+</div>
+{% endblock %}

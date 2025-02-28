@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Out Trainer</title>
+    
+    <!-- Bootstrap 4 CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            color: white;
+            font-family: 'Arial', sans-serif;
+            height: 200vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .clock-form {
+            background: linear-gradient(135deg, #e4e4e9, #1e1e2f);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        .card-header {
+            background: transparent;
+            border: none;
+            padding: 10px 0;
+        }
+
+        .card-header p {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: white;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 10px 0;
+        }
+
+        .card-body img {
+            border: 3px solid #007bff;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            transition: transform 0.3s ease;
+        }
+
+        .card-body img:hover {
+            transform: scale(1.1);
+        }
+
+        .card-body .text-danger {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .form-control {
+            background: #1e1e2f;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 10px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+            background: #1e1e2f;
+            color: white;
+        }
+
+        .btn-success, .btn-danger {
+            border-radius: 10px;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-success:hover, .btn-danger:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-success {
+            background: #28a745;
+            border: none;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+        }
+
+        .list-unstyled li {
+            padding: 8px 0;
+            border-bottom: 1px solid #444;
+        }
+
+        .list-unstyled li:last-child {
+            border-bottom: none;
+        }
+
+        .text-info {
+            color: #17a2b8 !important;
+        }
+
+        .text-danger {
+            color: #ff4d4d !important;
+        }
+
+        .text-white {
+            color: white !important;
+        }
+
+        .bg-dark-custom {
+            background: #1e1e2f;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        hr {
+            border-color: #444;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <form action="{% url 'admin-clock-out-url' trainer.id %}" method="post" class="clock-form">
+        {% csrf_token %}
+        <div class="card-header text-center">
+            <p class="text-black-50 font-weight-bolder text-uppercase">CLOCK OUT OF {{ teaching_attendance.unit.unit_name }} CLASS</p>
+        </div>
+        <div class="card-body">
+            <!-- Trainer Photo and Name -->
+            <div class="text-center">
+                <img src="{% static 'images/' %}{{ trainer.photo }}" alt="Photo Not Found Visit ICT For Update!">
+                <p class="mt-2"><span class="text-white h5">{{ trainer.name }}</span></p>
+            </div>
+
+            <!-- Current Class Details -->
+            <div class="bg-dark-custom">
+                <p class="text-center text-white font-weight-bolder">CURRENT CLASS DETAILS</p>
+                <ul class="list-unstyled">
+                    <li><p class="text-white font-weight-bolder">CLOCK IN TIME: <span>{{ teaching_attendance.clock_in }}</span></p></li>
+                    <li><p class="text-white font-weight-bolder">TIME LAPSED: <span>{{ duration }} Minutes</span></p></li>
+                </ul>
+            </div>
+             <!-- Unit Summary -->
+             <div class="bg-dark-custom mt-3">
+                <p class="text-center text-white font-weight-bolder">UNIT SUMMARY FOR THIS WEEK</p>
+                <p class="text-white text-center text-capitalize small">NOTE: Time Elapsed for this class not Inccluded.</p>
+                <ul class="list-unstyled">
+                    <li><p class="text-white font-weight-bolder">UNIT NAME: <span class="text-info">{{ teaching_attendance.unit.unit_name }}</span></p></li>
+                    <li><p class="text-white font-weight-bolder">UNIT CODE: <span class="text-info">{{ teaching_attendance.unit.unit_code }}</span></p></li>
+                    <li><p class="text-white font-weight-bolder">EXPECTED HOURS PER CLASS: <span class="text-info">{{ expected_hours_per_class }} HRS</span></p></li>
+                    <li><p class="text-white font-weight-bolder">EXPECTED HOURS PER WEEK: <span class="text-info">{{ expected_hours_per_week }} HRS</span></p></li>
+                    <li><p class="text-white font-weight-bolder">HOURS COVERED THIS WEEK: <span class="text-info">{{ hours_covered}}</span></p></li>
+                    <li><p class="text-white font-weight-bolder">HOURS PERCENTAGE: <span class="text-danger">{{ percentage }} %</span></p></li>
+                    <li><p class="text-white font-weight-bolder">REMAINING HOURS THIS WEEK: <span class="text-info">{{ remaining_hours }} HRS</span></p></li>
+                </ul>
+            </div>
+
+            <!-- Roll Input -->
+            <div class="mt-3">
+                <label for="roll" class="w-100">
+                    <span class="text-white font-weight-bold">ROLL:</span> <br>
+                    <input class="form-control" type="number" name="roll" placeholder="Enter Roll" required>
+                </label>
+            </div>
+
+           
+        </div>
+        <hr>
+        <div class="card-footer d-flex" style="background: transparent; border: none;">
+            <input class="btn btn-success w-25 m-auto" type="submit" value="Clock Out">
+            <a href="{% url 'admin-clock-url' %}" class="btn btn-danger w-25 m-auto">Cancel</a>
+        </div>
+    </form>
+</body>
+</html>

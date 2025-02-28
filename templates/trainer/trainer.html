@@ -40,7 +40,6 @@
         <!-- Edit Profile Form -->
         <div class="col-md-8">
             <div class="card shadow-lg p-4">
-                {% csrf_token %}
                 <div class="card-header bg-primary text-white text-center rounded">
                     <h3 class="text-capitalize">
                         <i class="fas fa-book-open mr-2"></i>Unit Tutoring
@@ -87,12 +86,12 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <button type="button" id="add-unit-button" class="w-100 btn btn-link">
-                        <i class="fas fa-plus">
-                        </i>Add Unit
-                    </button>
 
                 </div>
+                <button type="button" id="add-unit-button" class="w-100 btn btn-primary">
+                    <i class="fas fa-plus">
+                    </i>Add Unit
+                </button>
             </div>
         </div>
 
